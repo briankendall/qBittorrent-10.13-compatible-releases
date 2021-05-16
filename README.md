@@ -9,3 +9,5 @@ I will sign these builds with my Apple developer account just to make it slightl
 My instructions for building qBittorrent 4.3.3 and later on macOS 10.13 can be found [here](https://github.com/briankendall/qBittorrent-10.13-compatible-releases/blob/master/BUILD.md).
 
 This repository and its author are not affiliated with qBittorrent or its development team.
+
+Current release: 4.3.4
