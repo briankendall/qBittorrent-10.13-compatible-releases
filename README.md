@@ -10,4 +10,4 @@ My instructions for building qBittorrent 4.3.3 and later on macOS 10.13 can be f
 
 This repository and its author are not affiliated with qBittorrent or its development team.
 
-Current release: 4.3.6
+Current release: 4.3.7
