@@ -114,12 +114,12 @@ Download and build instructions was split due to some macOS specific stuff, see 
 
 ### Downloading OpenSSL
 
-OpenSSL is available for download from [official website][openssl-site], just download archive for 1.1.x series. At the moment of writing it was 1.1.1j.
+OpenSSL is available for download from [the official website](https://www.openssl.org/source/), just download archive for 1.1.x series. At the moment of writing it was 1.1.1m.
 
 Place downloaded archive to `$HOME/tmp/qbt/src` and extract it here:
 
 ```sh
-tar xf openssl-1.1.1j.tar.gz
+tar xf openssl-1.1.1m.tar.gz
 ```
 
 ### Downloading Qt
@@ -248,10 +248,10 @@ git apply $HOME/tmp/qbt/src/qbittorrent_10.13.patch
 
 OpenSSL in Qt' dependency, so build it first. In this guide it is built as shared library.
 
-At the time of writing OpenSSL 1.1.1j was the latest, so source directory is `openssl-1.1.1j`. Go to it
+At the time of writing OpenSSL 1.1.1m was the latest, so source directory is `openssl-1.1.1m`. Go to it
 
 ```sh
-cd openssl-1.1.1j
+cd openssl-1.1.1m
 ```
 
 and issue configuration command:
