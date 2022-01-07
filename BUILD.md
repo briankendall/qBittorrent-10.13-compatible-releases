@@ -1,8 +1,10 @@
-For those of us still running macOS 10.13, here are instructions on how to make 10.13 compatible builds of qBittorrent 4.3.3 (and possibly later versions as well).
+For those of us still running macOS 10.13, here are instructions on how to make 10.13 compatible builds of qBittorrent 4.3.x-4.4.0 (and possibly later versions as well).
 
-While these instructions may require modifications for future qBitorrent releases, they should generally continue to work so long as qBittorrent is still using Qt 5.15.
+While these instructions may require modifications for future qBitorrent releases, they should generally continue to work so long as qBittorrent is still compatible with Qt 5.15.2.
 
 These steps have been tailored for and tested on a clean installation of macOS 10.13.
+
+Note that this does not take any extra steps to build a universal x86_64 / arm64 version of qBittorrent, as arm64 is of course not at all supported in macOS 10.13 anyway.
 
 ## Setting up the build environment:
 
@@ -285,7 +287,7 @@ mkdir build-qt && cd build-qt
 Issue Qt configuration command:
 
 ```sh
-../qt5/configure -prefix "$HOME/tmp/qbt/ext" -opensource -confirm-license -release -appstore-compliant -c++std c++17 -no-pch -I "$HOME/tmp/qbt/ext/include" -L "$HOME/tmp/qbt/ext/lib" -make libs -no-compile-examples -no-dbus -no-icu -qt-pcre -system-zlib -ssl -openssl-linked -no-cups -qt-libpng -qt-libjpeg -no-feature-testlib -no-feature-sql -no-feature-concurrent
+../qt5/configure -prefix "$HOME/tmp/qbt/ext" -opensource -confirm-license -release -appstore-compliant -c++std c++17 -no-pch -I "$HOME/tmp/qbt/ext/include" -L "$HOME/tmp/qbt/ext/lib" -make libs -no-compile-examples -no-dbus -no-icu -qt-pcre -system-zlib -ssl -openssl-linked -no-cups -qt-libpng -qt-libjpeg -no-feature-testlib -no-feature-concurrent
 ```
 
 This configures Qt as shared library (.framework in case of macOS) with no any debug info included.
