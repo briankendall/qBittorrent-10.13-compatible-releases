@@ -14,36 +14,31 @@ Note that this page requires signing in with an Apple ID, but not an Apple devel
 
 2. Launch Xcode and agree to the licensing agreement, and wait for it to install components
 
-3. Install homebrew: [https://brew.sh](https://brew.sh)
+3. Install MacPorts: [https://www.macports.org/install.php](https://www.macports.org/install.php)    
+Note: Previous versions of these instructions suggested using Homebrew, and you could if you really prefer it, but a) I find MacPorts to overall be a much better, safer, and more reliable package manager, and b) Homebrew has long since dropped support for earlier macOS versions, while MacPorts remains committed to maintaining support for older macOS releases.
 
-4. Install llvm. As of the time of writing this, the latest version is 11.1.0:    
-`brew install --build-from-source llvm`
+4. Install llvm + clang. As of the time of writing this, the latest version is 15.0.5:    
+`sudo port install clang-15`
 
 5. Install cmake:    
-    `brew install cmake`    
-    This is probably not necessary as cmake should be installed when building llvm from source. But just in case that changes, I've added that in as an extra step here.
+    `sudo port install cmake`    
 
-6. This build of llvm should include a Toolchain folder that can be used with Xcode's command line tools. However, sometimes it does not include the `cc` and `c++` commands. To fix this:
-    1. `cd /usr/local/Cellar/llvm/*/Toolchains/LLVM*.xctoolchain/usr/bin`
-    2. `ln -s clang cc`
-    3. `ln -s clang++ c++`
+6. Create an Xcode toolchain for LLVM:
+    1. `mkdir -p ~/Library/Developer/Toolchains/llvm15.xctoolchain`
+    2. `cd ~/Library/Developer/Toolchains/llvm15.xctoolchain`
+    3. `echo -e '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0">\n<dict>\n\t<key>CFBundleIdentifier</key>\n\t<string>org.llvm.15.0.5</string>\n\t<key>CompatibilityVersion</key>\n\t<integer>2</integer>\n</dict>\n</plist>' > Info.plist`
+    4. `ln -s usr /opt/local/libexec/llvm-15`
 
-    If either of these files are already present, then ignore the error and move on
-
-7. Add llvm's toolchain to Xcode's available toolchains:    
-    1. `mkdir -p ~/Library/Developer/Toolchains`
-    2. `ln -s /usr/local/Cellar/llvm/*/Toolchains/LLVM*.xctoolchain ~/Library/Developer/Toolchains/llvm.xctoolchain`
-
-8. Make llvm's toolchain the default in the terminal:    
+7. Make llvm's toolchain the default in the terminal:    
     1. `export TOOLCHAINS=llvm`    
     2. `echo "export TOOLCHAINS=llvm" >> ~/.bash_profile`
 
-9. Make llvm's toolchain the default for Xcode
+8. Make llvm's toolchain the default for Xcode
     1. Open Xcode
     2. Open its preferences
     3. Click Components
     4. Click Toolchains
-    5. Select org.llvm.11.x.x
+    5. Select org.llvm.15.0.5
     6. Quit Xcode
     
     This may not actually be necessary, but I did it anyway just to be safe.
@@ -52,25 +47,19 @@ To double check everything is working, try running the following commands, and m
 
 ```
 $ clang++ --version
-clang version 11.1.0
+clang version 15.0.5
 Target: x86_64-apple-darwin17.7.0
 Thread model: posix
-InstalledDir: /Users/username/Library/Developer/Toolchains/llvm.xctoolchain/usr/bin
+InstalledDir: /Users/moof/Library/Developer/Toolchains/llvm15.xctoolchain/usr/bin
 
 $ c++ --version
-clang version 11.1.0
+clang version 15.0.5
 Target: x86_64-apple-darwin17.7.0
 Thread model: posix
-InstalledDir: /Users/username/Library/Developer/Toolchains/llvm.xctoolchain/usr/bin
+InstalledDir: /Users/moof/Library/Developer/Toolchains/llvm15.xctoolchain/usr/bin
 
 $ xcodebuild -find-executable clang++
-/Users/username/Library/Developer/Toolchains/llvm.xctoolchain/usr/bin/clang++
-
-$ xcodebuild -find-executable c++
-/Users/username/Library/Developer/Toolchains/llvm.xctoolchain/usr/bin/c++
-
-$ xcodebuild -find-executable cc
-/Users/username/Library/Developer/Toolchains/llvm.xctoolchain/usr/bin/cc
+/Users/moof/Library/Developer/Toolchains/llvm15.xctoolchain/usr/bin/clang++
 ```
 
 ## Modified macOS build instructions 
@@ -114,40 +103,26 @@ Download and build instructions was split due to some macOS specific stuff, see 
 
 ### Downloading OpenSSL
 
-OpenSSL is available for download from [the official website](https://www.openssl.org/source/), just download archive for 1.1.x series. At the moment of writing it was 1.1.1m.
+OpenSSL is available for download from [the official website](https://www.openssl.org/source/), just download archive for 1.1.x series. At the moment of writing it was 1.1.1s.
 
 Place downloaded archive to `$HOME/tmp/qbt/src` and extract it here:
 
 ```sh
-tar xf openssl-1.1.1m.tar.gz
+tar xf openssl-1.1.1s.tar.gz
 ```
+
+If you prefer using git, you can also clone the openssl git repo and checkout the latest release by tag.
 
 ### Downloading Qt
 
-`git` is used for Qt download. It is much effective rather than using source archive, and brings a lot of advantages for build process (less configure options are required). Moreover, it requires less space and time rather than using sources from archive, due to only few required submodules can be downloaded, not all available/provided by default.
+While git can be used to download Qt, I personally recommend just getting the complete .tar.xz archive of the latest Qt 5.15.x from here: [https://download.qt.io/official_releases/qt/5.15/](https://download.qt.io/official_releases/qt/5.15/)    
+...and extract it in `~/tmp/qbt/src`. As of the time of this writing, the latest version is 5.15.7, so I'll use that version number throughout these instructions. But if a newer version is available, use that one, and replace any instance of 5.15.7 with the version number you downloaded.
 
-Clone official Qt5 super module repository:
+You made need a separate tool to extract the xz file.
 
-```sh
-git clone https://code.qt.io/qt/qt5.git
-```
+You should now have a folder named `qt-everywhere-src-5.15.7` (replacing the x with whichever version number you actually downloaded).
 
-It is recommended to use stable releases, but using any other branch with newer Qt version is also possible. At the moment of writing Qt 5.15.2 was the latest, so use it. Switch (checkout) to desired branch/tag:
-
-```sh
-cd qt5
-git checkout v5.15.2
-```
-
-Now top-level repo is initialized, but NO any Qt sources were downloaded. To download sources issue next command:
-
-```sh
-perl init-repository --module-subset=qtbase,qtmacextras,qtsvg,qttools,qttranslations
-```
-
-This downloads only required parts of Qt. Download process takes few minutes depending on connection speed. About ~500 MB will be downloaded.
-
-However, Qt 5.15.2 will not compile properly on macOS 10.13. To fix this, copy the following text exactly:
+However, Qt 5.15.7 will not compile properly on macOS 10.13. To fix this, copy the following text exactly:
 
 ```
 diff --git a/src/corelib/kernel/qcore_mac.mm b/src/corelib/kernel/qcore_mac.mm
@@ -181,19 +156,19 @@ index 33c64bc474..a0fe49b071 100644
 Then apply the patch:
 
 ```sh
-cd qtbase
+cd ~/tmp/qbt/src/qt-everywhere-src-5.15.7/qtbase
 git apply $HOME/tmp/qbt/src/qtbase_10.13.patch
 ```
 
 
 ### Downloading Boost
 
-Boost is available for download from [official website][boost-site]. Latest available release is a good choice in most cases, so pick it firstly. If libtorrent build fails, download previous version. Preferable archive format is `.tar.bz2` or `.tar.gz`. At the moment of writing latest version was 1.75.0.
+Boost is available for download from [official website][boost-site]. Latest available release is a good choice in most cases, so pick it firstly. If libtorrent build fails, download previous version. Preferable archive format is `.tar.bz2` or `.tar.gz`. At the moment of writing latest version was 1.80.0.
 
 Place downloaded archive to `$HOME/tmp/qbt/src` (see [conventions](#conventions-used-in-this-document)) and extract it here:
 
 ```sh
-tar xf boost_1_75_0.tar.bz2
+tar xf boost_1_80_0.tar.bz2
 ```
 
 ### Downloading libtorrent
@@ -219,29 +194,8 @@ cd qBittorrent
 git checkout release-4.3.3
 ```
 
-There is one modification necessary, which is to set qBittorrent's deployment target to macOS 10.13. To fix this, change the `QMAKE_MACOSX_DEPLOYMENT_TARGET` variable in `macxconf.pri` from `10.14` to `10.13`. Or, copy the following text exactly:
-
-```
-diff --git a/macxconf.pri b/macxconf.pri
-index 96bc47b3a..1a7923c0f 100644
---- a/macxconf.pri
-+++ b/macxconf.pri
-@@ -7,7 +7,7 @@ else {
-     include(conf.pri)
- }
- 
--QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.14
-+QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.13
- 
- LIBS += -framework Carbon -framework IOKit -framework AppKit
-```
-...to `$HOME/tmp/qbt/src/qbittorrent_10.13.patch`
-
-Then apply the patch:
-
-```sh
-git apply $HOME/tmp/qbt/src/qbittorrent_10.13.patch
-```
+There is one modification necessary, which is to set qBittorrent's deployment target to macOS 10.13. To fix this, edit the file `macxconf.pri` and change the `QMAKE_MACOSX_DEPLOYMENT_TARGET` variable to `10.13`. The full line should read:    
+`QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.13`
 
 
 ### Building OpenSSL
@@ -281,13 +235,13 @@ Please note '_sw' suffix, it used just to install a subset of available stuff, t
 The preferred way to build Qt is 'out of tree build'. So create separate build directory at the same level as source directory and go into it:
 
 ```sh
-mkdir build-qt && cd build-qt
+mkdir build-qt-5.15.7 && cd build-qt-5.15.7
 ```
 
 Issue Qt configuration command:
 
 ```sh
-../qt5/configure -prefix "$HOME/tmp/qbt/ext" -opensource -confirm-license -release -appstore-compliant -c++std c++17 -no-pch -I "$HOME/tmp/qbt/ext/include" -L "$HOME/tmp/qbt/ext/lib" -make libs -no-compile-examples -no-dbus -no-icu -qt-pcre -system-zlib -ssl -openssl-linked -no-cups -qt-libpng -qt-libjpeg -no-feature-testlib -no-feature-concurrent
+../qt-everywhere-src-5.15.7/configure -prefix "$HOME/tmp/qbt/ext" -opensource -confirm-license -release -appstore-compliant -c++std c++17 -no-pch -I "$HOME/tmp/qbt/ext/include" -L "$HOME/tmp/qbt/ext/lib" -make libs -no-compile-examples -no-dbus -no-icu -qt-pcre -system-zlib -ssl -openssl-linked -no-cups -qt-libpng -qt-libjpeg -no-feature-testlib -skip qtwebengine -skip qtlocation
 ```
 
 This configures Qt as shared library (.framework in case of macOS) with no any debug info included.
@@ -342,10 +296,10 @@ mkdir build && cd build
 Configure libtorrent as static library with all other options set to default:
 
 ```sh
-cmake -DCMAKE_PREFIX_PATH="$HOME/tmp/qbt/ext" -DCMAKE_CXX_STANDARD=17 -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13 -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="$HOME/tmp/qbt/ext" ..
+cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_VISIBILITY_PRESET=hidden -DCMAKE_C_VISIBILITY_PRESET=hidden -DCMAKE_PREFIX_PATH="$HOME/tmp/qbt/ext" -DCMAKE_CXX_STANDARD=17 -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13 -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="$HOME/tmp/qbt/ext" ..
 ```
 
-Few important things to note in this line are C++ standard version and minimum supported macOS version (`CMAKE_CXX_STANDARD` and `CMAKE_OSX_DEPLOYMENT_TARGET` options), this is required for successful linkage. When compiling qBittorrent 4.3.3 or later for macOS 10.13, they must be `-DCMAKE_CXX_STANDARD=17` and `CMAKE_OSX_DEPLOYMENT_TARGET=10.13` respectively.
+Few important things to note in this line are C++ standard version and minimum supported macOS version (`CMAKE_CXX_STANDARD` and `CMAKE_OSX_DEPLOYMENT_TARGET` options), this is required for successful linkage. When compiling qBittorrent 4.3.3 or later for macOS 10.13, they must be `-DCMAKE_CXX_STANDARD=17` and `CMAKE_OSX_DEPLOYMENT_TARGET=10.13` respectively. Also we need to specify precisely which C and C++ compiler we're going to use, forcing cmake to use the version of LLVM we installed with MacPorts rather than the antiquated version included with Xcode. The visibility settings help prevent a compiler warning later on when compiling qBittorrent.
 
 Value of `CMAKE_PREFIX_PATH` is also important, it tells cmake where to find any required dependency. So adjust it in case of using custom paths.
 
@@ -373,10 +327,10 @@ mkdir build && cd build
 Now everything is ready to issue cmake (from build directory).
 
 ```sh
-cmake -DCMAKE_PREFIX_PATH="$HOME/tmp/qbt/ext" -DCMAKE_CXX_STANDARD=17 -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13 -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_CXX_VISIBILITY_PRESET=hidden -DCMAKE_C_VISIBILITY_PRESET=hidden -DCMAKE_CXX_FLAGS="-fvisibility-inlines-hidden" -DCMAKE_EXE_LINKER_FLAGS="-nostdlib /opt/local/libexec/llvm-15/lib/libc++.a /opt/local/libexec/llvm-15/lib/libc++abi.a /usr/lib/libSystem.dylib" -DCMAKE_PREFIX_PATH="$HOME/tmp/qbt/ext" -DCMAKE_CXX_STANDARD=17 -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13 -DCMAKE_BUILD_TYPE=Release ..
 ```
 
-This configures qBittorrent with all default build options. Only one important option to note - `CMAKE_PREFIX_PATH`, tells cmake where to find dependencies.
+Once again we must tell it to use our custom LLVM installation and not Xcode's. And we must explicitly link to LLVM's static runtime libraries as otherwise it won't link due to using C++ features not available in the system runtime. We need to make sure visibility is hidden, including for inlines, otherwise we'll get a "direct access in function XXX to global weak symbol YYY means the weak symbol cannot be overridden at runtime" warning message. Other than that, the important option to note - `CMAKE_PREFIX_PATH`, tells cmake where to find dependencies.
 
 Now run build as usual:
 
