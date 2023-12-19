@@ -1,6 +1,6 @@
-For those of us still running macOS 10.13, here are instructions on how to make 10.13 compatible builds of qBittorrent 4.3.x-4.4.0 (and possibly later versions as well).
+For those of us still running macOS 10.13, here are instructions on how to make 10.13 compatible builds of qBittorrent 4.3.x-4.6.0 (and possibly later versions as well).
 
-While these instructions may require modifications for future qBitorrent releases, they should generally continue to work so long as qBittorrent is still compatible with Qt 5.15.2.
+While these instructions may require modifications for future qBitorrent releases, they should generally continue to work so long as qBittorrent is still compatible with Qt 5.15.
 
 These steps have been tailored for and tested on a clean installation of macOS 10.13.
 
@@ -160,6 +160,14 @@ cd ~/tmp/qbt/src/qt-everywhere-src-5.15.7/qtbase
 git apply $HOME/tmp/qbt/src/qtbase_10.13.patch
 ```
 
+Note: Qt 5.15.10 and later require additional changes when compiling on macOS 10.13. Specifically, you need to replace instances of `__builtin_available(macOS 10.14)` (since it's not available when compiling with Xcode 10.1) with a function call that checks for whether the system in Mojave or later. I use the following:
+
+    static bool isMojaveOrLater() {
+        NSOperatingSystemVersion version = [[NSProcessInfo processInfo] operatingSystemVersion];
+        return version.majorVersion > 10 || version.minorVersion >= 14;
+    }
+
+I don't have a patch for this, and instead need to do it manually. If you don't want to deal with this step then use Qt 5.15.9.
 
 ### Downloading Boost
 
